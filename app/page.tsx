@@ -14,6 +14,7 @@ export default function Home() {
           </h1>
           <p>{session.user?.id}</p>
           <p>{session.user?.email}</p>
+          {console.log(session)}
           <button
             onClick={() => signOut()}
             className="bg-red-500 text-white px-4 py-2 rounded"

@@ -1,14 +1,43 @@
-import NextAuth from 'next-auth';
-import { AuthOptions } from 'next-auth';
+// src/app/api/auth/[...nextauth]/route.ts (or pages/api/auth/[...nextauth].js)
+import NextAuth, { AuthOptions } from 'next-auth';
 import KeycloakProvider from 'next-auth/providers/keycloak';
+import jwt from 'jsonwebtoken'; // You might need a specific JWT library
+
 export const authOptions: AuthOptions = {
   providers: [
     KeycloakProvider({
-      clientId: process.env.KEYCLOAK_CLIENT_ID,
-      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
-      issuer: process.env.KEYCLOAK_ISSUER,
+      clientId: process.env.KEYCLOAK_CLIENT_ID!,
+      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET!,
+      issuer: process.env.KEYCLOAK_ISSUER!,
     }),
   ],
+  callbacks: {
+    async jwt({ token, account }) {
+      if (account?.access_token) {
+        // Decode the Keycloak access token to extract roles
+        const decodedToken = jwt.decode(account.access_token);
+        if (decodedToken && typeof decodedToken !== 'string') {
+          // Add roles to the NextAuth token object
+          token.roles =
+            decodedToken.resource_access?.[
+              process.env.KEYCLOAK_CLIENT_ID!
+            ]?.roles || [];
+        }
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Add roles to the session object that's accessible on the client/server
+      if (session.user) {
+        (session.user as any).roles = token.roles;
+        (session.user as any).sub = token.sub;
+      }
+      return session;
+      console.log(token);
+    },
+  },
+  // ... other options
 };
+
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
