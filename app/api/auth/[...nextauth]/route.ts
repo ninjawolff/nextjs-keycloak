@@ -36,7 +36,14 @@ export const authOptions: AuthOptions = {
       console.log(token);
     },
   },
-  // ... other options
+  events: {
+    async signOut({ token }) {
+      // 'token' should contain the idToken to use here
+      const keycloakLogoutUrl = `${process.env.KEYCLOAK_ISSUER}/protocol/openid-connect/logout?id_token_hint=${token.idToken}&post_logout_redirect_uri=${encodeURIComponent(process.env.NEXTAUTH_URL)}`;
+
+      await fetch(keycloakLogoutUrl, { method: 'GET' });
+    },
+  },
 };
 
 const handler = NextAuth(authOptions);

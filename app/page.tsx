@@ -9,10 +9,10 @@ export default function Home() {
     <div className="p-6 text-center">
       {session ? (
         <>
-          <h1 className="text-xl mb-4">
+          <h1 className="text-xl mb-4 ">
             Hello, {session.user?.name}
           </h1>
-          <p>{session.user?.id}</p>
+          <p>{session.user?.sub}</p>
           <p>{session.user?.email}</p>
           {console.log(session)}
           <button
